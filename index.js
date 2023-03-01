@@ -1,3 +1,4 @@
+import './polyfills/fetch-polyfill.js'
 import { ChatGPTUnofficialProxyAPI, ChatGPTAPI } from 'chatgpt'
 import { config } from 'dotenv'
 import { topics, buildTopic } from './topics.js'
@@ -5,6 +6,7 @@ import { parseSearch } from './searchParser.js'
 import fs from 'fs'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { finishStep, printToConsole, step } from './utils/logger.js'
 
 config()
 
@@ -17,7 +19,7 @@ const main = async () => {
     const chatGptApi = new ChatGPTAPI({
         apiKey: process.env.OPEN_API_KEY
     })
-    const api = new ChatGPTUnofficialProxyAPI({
+    const proxyApi = new ChatGPTUnofficialProxyAPI({
         accessToken: process.env.OPEN_API_ACCESS_TOKEN
     })
 
@@ -35,10 +37,11 @@ const main = async () => {
         fs.appendFileSync(filePath, humanReadableTopic + "\n", 'utf-8')
 
         for await (let { searchFor: search, out } of searchTerms) {
-            console.log("---> Currently searching for : ", search);
-            const res = await chatGptApi.sendMessage(search, {
+            const masterStep = step("Currently searching for :", search);
+            const res = await proxyApi.sendMessage(search, {
                 timeoutMs
             })
+            finishStep(masterStep)
             if (out === 'json') {
                 var _items = res.text.split('\n')
                 try {
@@ -49,33 +52,34 @@ const main = async () => {
                 }
                 catch (err) {
                     console.log(res.text);
-                    console.log("---> Skipping json search for ", search)
+                    printToConsole("Skipping search due to error for : " + search, 'warn')
                     failedTopics.push(topic)
                     continue
                 }
                 for await (let item of _items) {
                     const searchTermInDetail = `describe in detail ${item.toLowerCase()} company in 200 words`
-                    console.log("\t---> Currently searching for : ", searchTermInDetail);
-                    const detailedRes = await chatGptApi.sendMessage(searchTermInDetail, {
+                    const subStep = step("\tCurrently searching for :", searchTermInDetail);
+                    const detailedRes = await proxyApi.sendMessage(searchTermInDetail, {
                         timeoutMs
                     })
                     fs.appendFileSync(filePath, detailedRes.text + "\n---------------------------------------------------------------\n", 'utf-8')
-                    console.log("\t---> Done with : ", searchTermInDetail)
+                    finishStep(subStep)
+                    printToConsole("\tDone with : " + searchTermInDetail, 'success')
                 }
                 continue
             }
             else {
                 fs.appendFileSync(filePath, res.text + "\n---------------------------------------------------------------\n", 'utf-8')
-                console.log("---> Done with : ", search)
+                printToConsole("Done with : " + search, 'success')
             }
             // successTopics.push(topic)
         }
         console.log('\n\n')
     }
-    console.log("Succeeded : ", topics.length - failedTopics.length)
-    console.error("Failed : ", failedTopics.length)
+    printToConsole("Succeeded : " + topics.length - failedTopics.length, 'success')
+    printToConsole("Failed : " + failedTopics.length, failedTopics.length > 0 ? 'error' : 'success')
     failedTopics.forEach(topic => {
-        console.error("---->", topic.searchTerm)
+        printToConsole(topic.searchTerm, 'error')
     })
 }
 
