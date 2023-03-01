@@ -12,24 +12,20 @@ function printToConsole(text, level = "success", additionalText = "") {
             return error(text)
         else if (level === 'warn')
             return warn(text)
+        else if(level === 'info')
+            return info(text)
         return text
     }
     console.log(getLog() + additionalText)
 }
 
 function finishStep(step) {
-    clearInterval(step)
+    // clearInterval(step)
+    step.stop()
 }
 
 function step(...text) {
-    // return new Promise(resolve => {
-        return loader(text.join(" "), 'info')
-        // let timeout = setTimeout(() => {
-            // clearInterval(_loader)
-            // clearTimeout(timeout)
-            // resolve()
-        // }, 1000)
-    // })
+    return loader(text.join(" "), 'info')
 }
 
 function success(text) {
@@ -42,6 +38,10 @@ function error(text) {
 
 function warn(text) {
     return chalk.yellowBright("! " + text)
+}
+
+function info(text) {
+    return chalk.blueBright(text)
 }
 
 export { printToConsole, step, finishStep }

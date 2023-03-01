@@ -13,6 +13,7 @@
     "chalk": "^5.2.0",
     "chatgpt": "^4.8.1",
     "dotenv": "^16.0.3",
+    "loading-cli": "^1.1.0",
     "node-fetch": "^3.3.0",
     "unfetch": "^5.0.0"
   },

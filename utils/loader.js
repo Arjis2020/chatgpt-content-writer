@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import loading from 'loading-cli';
 
 /**
  * Create and display a loader in the console.
@@ -37,8 +38,14 @@ export function loader(
         }
     }
 
-    return setInterval(function () {
-        process.stdout.write("\r" + chalk.blueBright(chars[x++]) + " " + getColoredText());
-        x = x % chars.length;
-    }, delay);
+    return loading({ text: getColoredText(), color: "blue", interval: delay, frames: chars }).start();
+
+    // return setInterval(function () {
+    //     // process.stdout.write("\r" + chalk.blueBright(chars[x++]) + " " + getColoredText());
+    //     process.stdout.clearLine()
+    //     // process.stdout.cursorTo(0)
+    //     // process.stdout.moveCursor(0, 0)
+    //     console.log(chalk.blueBright(chars[x++]) + " " + getColoredText())
+    //     x = x % chars.length;
+    // }, delay);
 }
