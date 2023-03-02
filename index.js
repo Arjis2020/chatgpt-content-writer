@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename);
     synchronous({
         timeoutMs,
         failedTopics,
-        api: chatgptProxyApi
+        api: chatgptApi
     })
 })()
 

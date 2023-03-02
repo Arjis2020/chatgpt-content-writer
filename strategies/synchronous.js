@@ -31,11 +31,12 @@ export const synchronous = async (options) => {
 
         let index = 1
         for await (let { searchFor: search, out } of searchTerms) {
-            if(progressTracker.isComplete(topic.id, index++)) {
+            if(progressTracker.isComplete(topic.id, index)) {
                 printToConsole("Skipping search as it is complete for : " + search, 'warn')
+                index++
                 continue
             }
-            fs.appendFileSync(filePath, search + "\n\n", 'utf-8')
+            // fs.appendFileSync(filePath, search + "\n\n", 'utf-8')
             const masterStep = step("Currently searching for :", search);
             const res = await api.sendMessage(search, {
                 timeoutMs
@@ -43,6 +44,7 @@ export const synchronous = async (options) => {
             finishStep(masterStep)
             if (out === 'json') {
                 var _items = res.text.trim().split('\n')
+                console.log(res.text);
                 try {
                     _items = _items.map(i => {
                         const value = i.split(/^\d+./)[1].trim()
@@ -56,6 +58,7 @@ export const synchronous = async (options) => {
                     failedTopics.push(topic)
                     continue
                 }
+                let listIndex = 1
                 for await (let item of _items) {
                     const searchTermInDetail = `describe in detail ${item.toLowerCase()} company in 200 words`
                     const subStep = step("\tCurrently searching for :", searchTermInDetail);
@@ -64,7 +67,7 @@ export const synchronous = async (options) => {
                     })
                     fs.appendFileSync(filePath, detailedRes.text.trim() + `\n${delimiter}\n`, 'utf-8')
                     finishStep(subStep)
-                    printToConsole("\tDone with : " + searchTermInDetail, 'success')
+                    printToConsole(`\t${listIndex++}. Done with : ` + searchTermInDetail, 'success')
                 }
                 progressTracker.track(topic.id, String(index++))
                 continue
