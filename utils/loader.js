@@ -9,11 +9,9 @@ import loading from 'loading-cli';
  * Array of characters representing loader steps
  * @param {number} [delay=100] Delay in ms between loader steps
  * @example
- * let loader = loader("Loading…");
+ * let loader = loading("Loading…");
  *
- * // Stop loader after 1 second
- * setTimeout(() => clearInterval(loader), 1000);
- * @returns {number} An interval that can be cleared to stop the animation
+ * @returns {loading} A loading instance that can be cleared to stop the animation
  */
 export function loader(
     text = "",
@@ -38,7 +36,12 @@ export function loader(
         }
     }
 
-    return loading({ text: getColoredText(), color: "blue", interval: delay, frames: chars }).start();
+    return loading({
+        text: getColoredText(),
+        color: "blue",
+        interval: delay,
+        frames: chars
+    }).start();
 
     // return setInterval(function () {
     //     // process.stdout.write("\r" + chalk.blueBright(chars[x++]) + " " + getColoredText());

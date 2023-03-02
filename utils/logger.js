@@ -20,7 +20,6 @@ function printToConsole(text, level = "success", additionalText = "") {
 }
 
 function finishStep(step) {
-    // clearInterval(step)
     step.stop()
 }
 

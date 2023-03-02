@@ -1,3 +1,5 @@
+import { v4 as uuidV4 } from 'uuid'
+
 export const topics = [
     // {
     //     searchTerm: "employment services",
@@ -77,23 +79,26 @@ export const topics = [
     //     location: "usa",
     //     criteria: "top 10"
     // },
-    // {
-    //     searchTerm: "Food Processing Companies",
-    //     year: "2023",
-    //     location: "usa",
-    //     criteria: "top 10"
-    // },
-    // {
-    //     searchTerm: "Best ERP Companies",
-    //     year: "2023",
-    //     location: "usa",
-    //     criteria: "top 10"
-    // },
+    {
+        id: "7815b22b-0a38-4316-bd40-6a68dbb6695b",
+        searchTerm: "Food Processing Companies",
+        year: "2023",
+        location: "usa",
+        criteria: "top 10"
+    },
+    {
+        id: "6aee089b-5f0a-4424-a176-e480743ce2de",
+        searchTerm: "Best ERP Companies",
+        year: "2023",
+        location: "usa",
+        criteria: "top 10"
+    },
 ].map(topic => {
     const keys = Object.keys(topic)
     let _topic = {}
     keys.forEach(key => {
         _topic[key] = topic[key].toLowerCase()
+        // _topic.id = uuidV4()
     })
     return _topic
 })

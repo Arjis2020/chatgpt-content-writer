@@ -15,7 +15,8 @@
     "dotenv": "^16.0.3",
     "loading-cli": "^1.1.0",
     "node-fetch": "^3.3.0",
-    "unfetch": "^5.0.0"
+    "unfetch": "^5.0.0",
+    "uuid": "^9.0.0"
   },
   "type": "module",
   "devDependencies": {
