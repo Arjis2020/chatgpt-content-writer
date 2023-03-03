@@ -3,6 +3,7 @@ import { config } from 'dotenv'
 import fs from 'fs'
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { analyzeFile } from '../utils/analyzeFile.js';
 
 config()
 
@@ -22,20 +23,25 @@ bot.on('message', (message) => {
 
 /**
  * @param {string} filename
- * @param {() => void} callback
  */
 
 const file = (filename) => path.join(__dirname, '../outputs', filename)
 
-const sendDocument = async (filename, callback) => {
+const sendDocument = async (filename) => {
     const buffer = fs.readFileSync(file(filename))
+    const caption = analyzeFile(buffer)
+
+    console.log(caption)
+    
+    const send = async (chatId) => await bot.sendDocument(chatId, buffer, {
+        caption
+    }, {
+        filename,
+        contentType: 'text/plain'
+    })
 
     try {
-        await bot.sendDocument(chatId, buffer, {}, {
-            filename,
-            contentType: 'text/plain'
-        })
-        callback && callback()
+        await Promise.all([send(chatId), send(personalChatId)])
     }
     catch (err) {
         console.error(err.toString())

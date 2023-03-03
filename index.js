@@ -9,7 +9,7 @@ import { synchronous } from './strategies/synchronous.js'
     synchronous({
         timeoutMs,
         failedTopics,
-        api: chatgptProxyApi
+        api: chatgptApi
     })
 })()
 

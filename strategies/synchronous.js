@@ -46,7 +46,7 @@ export const synchronous = async (options) => {
             finishStep(masterStep)
             if (out === 'json') {
                 console.log(res.text);
-                if(!res.text.startsWith('1.')) {
+                if (!res.text.startsWith('1.')) {
                     res.text = res.text.split('\n')[1]
                 }
                 var _items = res.text.trim().split('\n')
@@ -85,17 +85,24 @@ export const synchronous = async (options) => {
             }
             progressTracker.track(topic.id, String(index++))
         }
-        console.log('\n\n')
         if (!hasFailed) {
-            try {
-                const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
-                await telegram.sendDocument(filename)
-                finishStep(telegramStep)
-                printToConsole(`Sent ${filename} successfully`, 'success')
+            if (!progressTracker.isComplete(topic.id, index)) {
+                try {
+                    const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
+                    await telegram.sendDocument(filename)
+                    progressTracker.track(topic.id, index++)
+                    finishStep(telegramStep)
+                    printToConsole(`Sent ${filename} successfully`, 'success')
+                }
+                catch (err) {
+                    console.log(err.toString())
+                    printToConsole(`Skipping sending ${filename} via telegram due to error!`, 'warn')
+                    progressTracker.track(topic.id, index++, PROGRESS_STATE.FAILED)
+                    continue
+                }
             }
-            catch (err) {
-                console.log(err.toString())
-                printToConsole(`Skipping sending ${filename} via telegram due to error!`, 'warn')
+            else {
+                printToConsole(`Skipping sending ${filename} as it was already sent`, 'warn')
                 continue
             }
         }
@@ -103,6 +110,7 @@ export const synchronous = async (options) => {
             printToConsole(`Skipping sending ${filename}.txt due to existing error while searching. Refer to the error above.`, 'warn')
             continue
         }
+        console.log('\n\n')
     }
     printToConsole("Succeeded : ", 'success', topics.length - failedTopics.length)
     printToConsole("Failed : ", failedTopics.length > 0 ? 'error' : 'success', failedTopics.length)
