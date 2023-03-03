@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import { progressTracker, PROGRESS_STATE } from '../utils/progressTracker.js'
 import { fileURLToPath } from 'url'
+import telegram from '../telegram/index.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,27 +25,33 @@ export const synchronous = async (options) => {
         const searchTerms = parseSearch(topic)
         const humanReadableTopic = buildTopic(topic)
 
-        if(!progressTracker.hasTopic(topic.id)) {
+        if (!progressTracker.hasTopic(topic.id)) {
             fs.writeFileSync(file(filename), '')
             fs.appendFileSync(filePath, humanReadableTopic + "\n\n", 'utf-8')
-        }        
+        }
 
         let index = 1
+        let hasFailed = false
         for await (let { searchFor: search, out } of searchTerms) {
-            if(progressTracker.isComplete(topic.id, index)) {
+            if (progressTracker.isComplete(topic.id, index)) {
                 printToConsole("Skipping search as it is complete for : " + search, 'warn')
                 index++
                 continue
             }
             // fs.appendFileSync(filePath, search + "\n\n", 'utf-8')
             const masterStep = step("Currently searching for :", search);
-            const res = await api.sendMessage(search, {
+            let res = await api.sendMessage(search, {
                 timeoutMs
             })
             finishStep(masterStep)
             if (out === 'json') {
-                var _items = res.text.trim().split('\n')
                 console.log(res.text);
+                if(!res.text.startsWith('1.')) {
+                    res.text = res.text.split('\n')[1]
+                }
+                var _items = res.text.trim().split('\n')
+                console.log("Modified")
+                console.log(res.text)
                 try {
                     _items = _items.map(i => {
                         const value = i.split(/^\d+./)[1].trim()
@@ -52,10 +59,10 @@ export const synchronous = async (options) => {
                     })
                 }
                 catch (err) {
-                    console.log(res.text);
                     progressTracker.track(topic.id, String(index++), PROGRESS_STATE.FAILED)
                     printToConsole("Skipping search due to error for : " + search, 'warn')
                     failedTopics.push(topic)
+                    hasFailed = true
                     continue
                 }
                 let listIndex = 1
@@ -79,10 +86,28 @@ export const synchronous = async (options) => {
             progressTracker.track(topic.id, String(index++))
         }
         console.log('\n\n')
+        if (!hasFailed) {
+            try {
+                const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
+                await telegram.sendDocument(filename)
+                finishStep(telegramStep)
+                printToConsole(`Sent ${filename} successfully`, 'success')
+            }
+            catch (err) {
+                console.log(err.toString())
+                printToConsole(`Skipping sending ${filename} via telegram due to error!`, 'warn')
+                continue
+            }
+        }
+        else {
+            printToConsole(`Skipping sending ${filename}.txt due to existing error while searching. Refer to the error above.`, 'warn')
+            continue
+        }
     }
     printToConsole("Succeeded : ", 'success', topics.length - failedTopics.length)
     printToConsole("Failed : ", failedTopics.length > 0 ? 'error' : 'success', failedTopics.length)
     failedTopics.forEach(topic => {
         printToConsole(topic.searchTerm, 'error')
     })
+    process.exit(0)
 }

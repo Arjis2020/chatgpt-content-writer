@@ -1,14 +1,6 @@
 import './polyfills/fetch-polyfill.js'
 import { chatgptProxyApi, chatgptApi } from './chatgpt.js'
-import { topics } from './topics.js'
-import { createJob } from './utils/job.js'
 import { synchronous } from './strategies/synchronous.js'
-
-import { fileURLToPath } from 'url';
-import path from 'path'
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 (async () => {
     const timeoutMs = 15 * 60 * 1000
@@ -17,7 +9,7 @@ const __dirname = path.dirname(__filename);
     synchronous({
         timeoutMs,
         failedTopics,
-        api: chatgptApi
+        api: chatgptProxyApi
     })
 })()
 
