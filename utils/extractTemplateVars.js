@@ -31,6 +31,8 @@
 //   return output
 // };
 
+import { v4 as uuidV4 } from 'uuid'
+
 /**
  * 
  * @param {string} string 
@@ -40,16 +42,17 @@ export const extractTemplateVars = (string) => {
   const format = "(.+) best (.+) in (.+) in (.+)"
   const humandReadableFormat = "top 10 best {searchTerm} in {location} in {year}"
   const parsed = new RegExp(format).exec(string)
-  if(!parsed || !parsed[0]) {
+  if (!parsed || !parsed[0]) {
     throw new Error(`Please send a string with the following format: ${humandReadableFormat}`)
   }
-  let critera = 'top 10 best',
+  let criteria = `${parsed[1]} best`,
     searchTerm = parsed[2],
     location = parsed[3],
     year = parsed[4]
 
   return {
-    critera,
+    id: "715c8a8c-0c29-447a-aa4a-6dd0d7be3c57",
+    criteria,
     searchTerm,
     location,
     year
