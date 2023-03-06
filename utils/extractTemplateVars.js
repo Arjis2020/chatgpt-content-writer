@@ -51,7 +51,7 @@ export const extractTemplateVars = (string) => {
     year = parsed[4]
 
   return {
-    id: "715c8a8c-0c29-447a-aa4a-6dd0d7be3c57",
+    id: uuidV4(),
     criteria,
     searchTerm,
     location,

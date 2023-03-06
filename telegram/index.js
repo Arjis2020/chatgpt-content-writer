@@ -1,15 +1,16 @@
 import TelegramBot from 'node-telegram-bot-api'
 import { config } from 'dotenv'
 import fs from 'fs'
-import { fileURLToPath } from 'url';
-import path from 'path';
+// import { fileURLToPath } from 'url';
+// import path from 'path';
 import { analyzeFile } from '../utils/analyzeFile.js';
 import { extractTemplateVars } from '../utils/extractTemplateVars.js';
+import { printToConsole } from '../utils/logger.js';
 
 config()
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // const chatId = 1486538799
 const personalChatId = 1972126908
@@ -17,11 +18,12 @@ const personalChatId = 1972126908
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT
 var bot = undefined
 
-export const init = (onTextHandler) => {
+export const init = async (onTextHandler) => {
     if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
 
     bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true, filepath: false })
-
+    // await bot.sendMessage(personalChatId, 'Initialized')
+    printToConsole('Bot is online! Listening for messages / commands...', 'success')
     let EXEC_STATES = {
         IN_EXECUTION: 0,
         IDLE: 1

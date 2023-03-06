@@ -30,9 +30,9 @@ const onTextHandler = async (topics, chatId) => {
     await synchronousV2(topics, {
         timeoutMs,
         failedTopics,
-        api: chatgptProxyApi,
+        api: chatgptApi,
         onDocumentProcessed: sendDocument,
-        chatId 
+        chatId
     })
     // await asyncMimic()
 }

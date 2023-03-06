@@ -34,40 +34,37 @@ export const synchronousV2 = async (topics, options) => {
         }
 
         let index = 1
-        // let hasFailed = false
         for await (let { searchFor: search, out } of searchTerms) {
             if (progressTracker.isComplete(topic.id, index)) {
                 printToConsole("Skipping search as it is complete for : " + search, 'warn')
                 index++
                 continue
             }
-            // fs.appendFileSync(filePath, search + "\n\n", 'utf-8')
             const masterStep = step("Currently searching for :", search);
             let res = await api.sendMessage(search, {
                 timeoutMs
             })
             finishStep(masterStep)
             if (out === 'json') {
-                var _items
-                if (res.text.startsWith('1.')) {
-                    res.text = res.text.split('\n')[1]
-                    _items = res.text.trim().split('\n').map(i => {
-                        const value = i.split(/^\d+./)[1].trim()
-                        return value
-                    })
-                }
-                else {
-                    try {
+                console.log(res.text)
+                try {
+                    var _items
+                    if (res.text.startsWith('1.')) {
+                        _items = res.text.trim().split('\n').map(i => {
+                            const value = i.split(/^\d+./)[1].trim()
+                            return value
+                        })
+                    }
+                    else {
                         _items = parseList(res.text)
                     }
-                    catch (err) {
-                        progressTracker.track(topic.id, String(index++), PROGRESS_STATE.FAILED)
-                        printToConsole("Skipping search due to error for : " + search, 'warn')
-                        failedTopics.push(topic)
-                        // hasFailed = true
-                        contents.push(search + "\n")
-                        continue
-                    }
+                }
+                catch (err) {
+                    progressTracker.track(topic.id, String(index++), PROGRESS_STATE.FAILED)
+                    printToConsole("Skipping search due to error for : " + search, 'warn')
+                    failedTopics.push(topic)
+                    contents.push(search + "\n")
+                    continue
                 }
                 let subContents = []
                 subContents.push(`Here are the ${humanReadableTopic}`)
@@ -78,7 +75,6 @@ export const synchronousV2 = async (topics, options) => {
                     const detailedRes = await api.sendMessage(searchTermInDetail, {
                         timeoutMs
                     })
-                    // fs.appendFileSync(filePath, detailedRes.text.trim() + `\n${delimiter}\n`, 'utf-8')
                     subContents.push(`${item} - ` + detailedRes.text.trim())
                     finishStep(subStep)
                     printToConsole(`\t${listIndex++}. Done with : ` + searchTermInDetail, 'success')
@@ -88,18 +84,15 @@ export const synchronousV2 = async (topics, options) => {
                 continue
             }
             else {
-                // fs.appendFileSync(filePath, res.text.trim() + `\n${delimiter}\n`, 'utf-8')
                 contents.push(`${search}\n\n` + res.text.trim())
                 printToConsole("Done with : " + search, 'success')
             }
             progressTracker.track(topic.id, String(index++))
         }
-        // if (!hasFailed) {
         if (!progressTracker.isComplete(topic.id, index)) {
             try {
                 const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
                 fs.writeFileSync(filePath, contents.join(`\n${delimiter}\n`), 'utf-8')
-                // await telegram.sendDocument(filename)
                 await onDocumentProcessed(filePath, chatId)
                 // fs.unlinkSync(file(filename))
                 progressTracker.track(topic.id, index++)
