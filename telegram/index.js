@@ -22,8 +22,9 @@ export const init = async (onTextHandler) => {
     if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
 
     bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true, filepath: false })
-    // await bot.sendMessage(personalChatId, 'Initialized')
+
     printToConsole('Bot is online! Listening for messages / commands...', 'success')
+
     let EXEC_STATES = {
         IN_EXECUTION: 0,
         IDLE: 1
@@ -43,15 +44,15 @@ export const init = async (onTextHandler) => {
                 const topics = match[1]
                 var arrayMessage = topics.split('\n')
                 const parsedMessages = arrayMessage.map(msg => extractTemplateVars(msg))
-    
+
                 // console.log(parsedMessages)
                 await bot.sendMessage(message.chat.id,
                     `${String.fromCodePoint(0x2705)} Received request for generating content for ${arrayMessage.length} topic(s). This could take several minutes. Do not worry though, you will automatically receive all the content you requested with additional details as we go about generating the requested content.\n\nPlease understand that ChatGPT nor the bot is perfect by any means. There could be errors arising at any point in the generation process. Nevertheless, you will be notified and maximum content will be generated. If you think, the error has caused some of your content to go missing, please feel free to manually search for it and edit the content as you like.\n\nYou are smart enough ${String.fromCodePoint(0x1F609)}.`)
-                
+
                 execState[chatId] = EXEC_STATES.IN_EXECUTION
-                
+
                 await onTextHandler(parsedMessages, chatId)
-                
+
                 execState[chatId] = EXEC_STATES.IDLE
 
                 await bot.sendMessage(chatId, 'Hope you liked the results. Come back again when you need me!')
@@ -65,13 +66,14 @@ export const init = async (onTextHandler) => {
         }
     })
 
-    
+
 }
 
-export const sendDocument = async (filepath, chatId) => {
+export const sendDocument = async (chatId, details) => {
     if (!bot || !bot.sendDocument) throw new Error('Telegram Bot was not initialized properly! Have you called init() before?')
 
-    const buffer = fs.readFileSync(filepath)
+    const { buffer, filename } = details
+    // const buffer = fs.readFileSync(filepath)
     const caption = analyzeFile(buffer)
 
     console.log(caption)
@@ -79,7 +81,7 @@ export const sendDocument = async (filepath, chatId) => {
     const send = async (chatId) => await bot.sendDocument(chatId, buffer, {
         caption
     }, {
-        filename: filepath.split('/').reverse()[0],
+        filename,
         contentType: 'text/plain'
     })
 

@@ -1,17 +1,16 @@
 import { parseSearch } from '../searchParser.js'
 import { buildTopic } from '../topics.js'
 import { finishStep, printToConsole, step } from '../utils/logger.js'
-// import { topics } from '../topics.js'
-import fs from 'fs'
-import path from 'path'
+// import fs from 'fs'
+// import path from 'path'
 import { progressTracker, PROGRESS_STATE } from '../utils/progressTracker.js'
-import { fileURLToPath } from 'url'
+// import { fileURLToPath } from 'url'
 import { parseList } from '../utils/listParser.js'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
-const file = (filename) => path.join(__dirname, '../outputs', filename)
+// const file = (filename) => path.join(__dirname, '../outputs', filename)
 
 const delimiter = "---------------------------------------------------------------"
 
@@ -22,14 +21,12 @@ export const synchronousV2 = async (topics, options) => {
         let contents = []
 
         const filename = topic.searchTerm + ".txt"
-        const filePath = file(filename)
+        // const filePath = file(filename)
 
         const searchTerms = parseSearch(topic)
         const humanReadableTopic = buildTopic(topic)
 
         if (!progressTracker.hasTopic(topic.id)) {
-            // fs.writeFileSync(file(filename), '')
-            // fs.appendFileSync(filePath, humanReadableTopic + "\n\n", 'utf-8')
             contents.push(humanReadableTopic)
         }
 
@@ -92,9 +89,12 @@ export const synchronousV2 = async (topics, options) => {
         if (!progressTracker.isComplete(topic.id, index)) {
             try {
                 const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
-                fs.writeFileSync(filePath, contents.join(`\n${delimiter}\n`), 'utf-8')
-                await onDocumentProcessed(filePath, chatId)
-                // fs.unlinkSync(file(filename))
+                // fs.writeFileSync(filePath, contents.join(`\n${delimiter}\n`), 'utf-8')
+                await onDocumentProcessed(chatId, {
+                    buffer: Buffer.from(contents.join(`\n${delimiter}\n`)),
+                    filename
+                })
+                // fs.unlinkSync(file(filename)) // delete the file to conserve storage
                 progressTracker.track(topic.id, index++)
                 finishStep(telegramStep)
                 printToConsole(`Sent ${filename} successfully`, 'success')
