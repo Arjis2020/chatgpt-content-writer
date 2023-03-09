@@ -22,10 +22,8 @@
     "node-fetch": "^3.3.0",
     "node-telegram-bot-api": "^0.61.0",
     "unfetch": "^5.0.0",
-    "uuid": "^9.0.0"
-  },
-  "type": "module",
-  "devDependencies": {
+    "uuid": "^9.0.0",
     "node-abort-controller": "^3.1.1"
-  }
+  },
+  "type": "module"
 }
