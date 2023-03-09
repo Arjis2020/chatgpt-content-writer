@@ -65,9 +65,8 @@ export const init = async (onTextHandler) => {
     // })
 
     bot.command('requestcontent', async (ctx) => {
+        const chatId = ctx.chat.id
         try {
-            const chatId = ctx.chat.id
-
             if (typeof execState[chatId] === 'undefined' || execState[chatId] === EXEC_STATES.IDLE) {
                 const topics = ctx.match
                 var arrayMessage = topics.split('\n')
@@ -75,7 +74,6 @@ export const init = async (onTextHandler) => {
 
                 // console.log(parsedMessages)
                 await ctx.reply(
-                    message.chat.id,
                     acknowledgeMessage(arrayMessage)
                 )
 
@@ -85,14 +83,14 @@ export const init = async (onTextHandler) => {
 
                 execState[chatId] = EXEC_STATES.IDLE
 
-                await ctx.reply(chatId, 'Hope you liked the results. Come back again when you need me!')
+                await ctx.reply('Hope you liked the results. Come back again when you need me!')
             }
             else {
-                await ctx.reply(chatId, "The bot is currently busy processing a previous request sent by you. Please come back later.")
+                await ctx.reply("The bot is currently busy processing a previous request sent by you. Please come back later.")
             }
         }
         catch (err) {
-            await ctx.reply(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
+            await ctx.reply(`${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
         }
     })
 

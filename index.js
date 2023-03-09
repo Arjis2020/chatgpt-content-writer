@@ -13,7 +13,7 @@ const onTextHandler = async (topics, chatId) => {
     await synchronousV2(topics, {
         timeoutMs,
         failedTopics,
-        api: chatgptApi,
+        api: process.env.NODE_ENV === 'production' ? chatgptApi : chatgptProxyApi,
         onDocumentProcessed: sendDocument,
         chatId
     })
