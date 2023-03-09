@@ -16,9 +16,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT
 var bot = undefined
 
 export const init = async (onTextHandler) => {
-    // if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
-
-    // bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true, filepath: false })
+    if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
     bot = new Bot(TELEGRAM_BOT_TOKEN)
 
     console.log('Bot is online! Listening for messages / commands...')
@@ -28,41 +26,7 @@ export const init = async (onTextHandler) => {
         IDLE: 1
     }
 
-    // bot.on('message', async (message) => {
-    //     await bot.sendMessage(message.chat.id, `I'm sorry, I'm not intelligent enough to understand plain messages. If you intended to request for content, please send it in the following format:\n\n/requestcontent<SPACE>{topics with every topic in a new line}\n\nFor example:\n/requestcontent Top 10 best food delivery companies in USA in 2023\nTop 10 best medical health agencies in USA in 2023.\n\nIn case, no one wished you a good day today,\nHave a good day!${String.fromCodePoint(0x1F496)}`)
-    // })
-
     let execState = {}
-
-    // bot.onText(/\/requestcontent (.+(\n(.+))*)/, async (message, match) => {
-    //     try {
-    //         const chatId = message.chat.id
-
-    //         if (typeof execState[chatId] === 'undefined' || execState[chatId] === EXEC_STATES.IDLE) {
-    //             const topics = match[1]
-    //             var arrayMessage = topics.split('\n')
-    //             const parsedMessages = arrayMessage.map(msg => extractTemplateVars(msg))
-
-    //             // console.log(parsedMessages)
-    //             await bot.sendMessage(message.chat.id,
-    //                 )
-
-    //             execState[chatId] = EXEC_STATES.IN_EXECUTION
-
-    //             await onTextHandler(parsedMessages, chatId)
-
-    //             execState[chatId] = EXEC_STATES.IDLE
-
-    //             await bot.sendMessage(chatId, 'Hope you liked the results. Come back again when you need me!')
-    //         }
-    //         else {
-    //             await bot.sendMessage(chatId, "The bot is currently busy processing a previous request sent by you. Please come back later.")
-    //         }
-    //     }
-    //     catch (err) {
-    //         await bot.sendMessage(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
-    //     }
-    // })
 
     bot.command('requestcontent', async (ctx) => {
         const chatId = ctx.chat.id
