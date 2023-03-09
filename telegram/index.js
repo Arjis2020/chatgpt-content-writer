@@ -76,7 +76,7 @@ export const init = async (onTextHandler) => {
                 // console.log(parsedMessages)
                 await ctx.reply(
                     message.chat.id,
-                    acknowledgeMessage
+                    acknowledgeMessage(arrayMessage)
                 )
 
                 execState[chatId] = EXEC_STATES.IN_EXECUTION
