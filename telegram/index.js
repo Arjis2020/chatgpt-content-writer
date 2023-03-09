@@ -2,7 +2,10 @@ import TelegramBot from 'node-telegram-bot-api'
 import { config } from 'dotenv'
 import { analyzeFile } from '../utils/analyzeFile.js';
 import { extractTemplateVars } from '../utils/extractTemplateVars.js';
-import { printToConsole } from '../utils/logger.js';
+import { Bot, webhookCallback, InputFile } from 'grammy'
+import express from 'express'
+import { acknowledgeMessage } from '../utils/constants.js';
+// import { printToConsole } from '../utils/logger.js';
 
 config()
 
@@ -13,11 +16,12 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT
 var bot = undefined
 
 export const init = async (onTextHandler) => {
-    if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
+    // if (!onTextHandler || typeof onTextHandler !== 'function') throw new Error("onTextHandler must be passed and it should be a function!")
 
-    bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true, filepath: false })
+    // bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true, filepath: false })
+    bot = new Bot(TELEGRAM_BOT_TOKEN)
 
-    printToConsole('Bot is online! Listening for messages / commands...', 'success')
+    console.log('Bot is online! Listening for messages / commands...')
 
     let EXEC_STATES = {
         IN_EXECUTION: 0,
@@ -30,18 +34,50 @@ export const init = async (onTextHandler) => {
 
     let execState = {}
 
-    bot.onText(/\/requestcontent (.+(\n(.+))*)/, async (message, match) => {
+    // bot.onText(/\/requestcontent (.+(\n(.+))*)/, async (message, match) => {
+    //     try {
+    //         const chatId = message.chat.id
+
+    //         if (typeof execState[chatId] === 'undefined' || execState[chatId] === EXEC_STATES.IDLE) {
+    //             const topics = match[1]
+    //             var arrayMessage = topics.split('\n')
+    //             const parsedMessages = arrayMessage.map(msg => extractTemplateVars(msg))
+
+    //             // console.log(parsedMessages)
+    //             await bot.sendMessage(message.chat.id,
+    //                 )
+
+    //             execState[chatId] = EXEC_STATES.IN_EXECUTION
+
+    //             await onTextHandler(parsedMessages, chatId)
+
+    //             execState[chatId] = EXEC_STATES.IDLE
+
+    //             await bot.sendMessage(chatId, 'Hope you liked the results. Come back again when you need me!')
+    //         }
+    //         else {
+    //             await bot.sendMessage(chatId, "The bot is currently busy processing a previous request sent by you. Please come back later.")
+    //         }
+    //     }
+    //     catch (err) {
+    //         await bot.sendMessage(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
+    //     }
+    // })
+
+    bot.command('requestcontent', async (ctx) => {
         try {
-            const chatId = message.chat.id
+            const chatId = ctx.chat.id
 
             if (typeof execState[chatId] === 'undefined' || execState[chatId] === EXEC_STATES.IDLE) {
-                const topics = match[1]
+                const topics = ctx.match
                 var arrayMessage = topics.split('\n')
                 const parsedMessages = arrayMessage.map(msg => extractTemplateVars(msg))
 
                 // console.log(parsedMessages)
-                await bot.sendMessage(message.chat.id,
-                    `${String.fromCodePoint(0x2705)} Received request for generating content for ${arrayMessage.length} topic(s). This could take several minutes. Do not worry though, you will automatically receive all the content you requested with additional details as we go about generating the requested content.\n\nPlease understand that ChatGPT nor the bot is perfect by any means. There could be errors arising at any point in the generation process. Nevertheless, you will be notified and maximum content will be generated. If you think, the error has caused some of your content to go missing, please feel free to manually search for it and edit the content as you like.\n\nYou are smart enough ${String.fromCodePoint(0x1F609)}.`)
+                await ctx.reply(
+                    message.chat.id,
+                    acknowledgeMessage
+                )
 
                 execState[chatId] = EXEC_STATES.IN_EXECUTION
 
@@ -49,18 +85,30 @@ export const init = async (onTextHandler) => {
 
                 execState[chatId] = EXEC_STATES.IDLE
 
-                await bot.sendMessage(chatId, 'Hope you liked the results. Come back again when you need me!')
+                await ctx.reply(chatId, 'Hope you liked the results. Come back again when you need me!')
             }
             else {
-                await bot.sendMessage(chatId, "The bot is currently busy processing a previous request sent by you. Please come back later.")
+                await ctx.reply(chatId, "The bot is currently busy processing a previous request sent by you. Please come back later.")
             }
         }
         catch (err) {
-            await bot.sendMessage(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
+            await ctx.reply(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
         }
     })
 
+    if (process.env.NODE_ENV === 'production') {
+        const app = express()
 
+        const PORT = process.env.PORT || 3000
+
+        app.use(express.json())
+        app.use(webhookCallback(bot, 'express'))
+
+        app.listen(PORT, () => `Server started on port ${PORT}`)
+    }
+    else {
+        await bot.start()
+    }
 }
 
 export const sendDocument = async (chatId, details) => {
@@ -71,12 +119,7 @@ export const sendDocument = async (chatId, details) => {
 
     console.log(caption)
 
-    const send = async (chatId) => await bot.sendDocument(chatId, buffer, {
-        caption
-    }, {
-        filename,
-        contentType: 'text/plain'
-    })
+    const send = async (chatId) => await bot.api.sendDocument(chatId, new InputFile(buffer, filename))
 
     try {
         if (chatId !== personalChatId)
