@@ -97,7 +97,7 @@ export const init = async (onTextHandler) => {
     if (process.env.NODE_ENV === 'production') {
         const app = express()
 
-        const PORT = process.env.PORT || 3000
+        const PORT = process.env.PORT || 9000
 
         app.use(express.json())
         app.use(webhookCallback(bot, 'express'))
@@ -110,7 +110,7 @@ export const init = async (onTextHandler) => {
 }
 
 export const sendDocument = async (chatId, details) => {
-    if (!bot || !bot.sendDocument) throw new Error('Telegram Bot was not initialized properly! Have you called init() before?')
+    if (!bot || !bot.api.sendDocument) throw new Error('Telegram Bot was not initialized properly! Have you called init() before?')
 
     const { buffer, filename } = details
     const caption = analyzeFile(buffer)
