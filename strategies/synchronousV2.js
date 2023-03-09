@@ -1,16 +1,8 @@
 import { parseSearch } from '../searchParser.js'
 import { buildTopic } from '../topics.js'
-import { finishStep, printToConsole, step } from '../utils/logger.js'
-// import fs from 'fs'
-// import path from 'path'
-import { progressTracker, PROGRESS_STATE } from '../utils/progressTracker.js'
-// import { fileURLToPath } from 'url'
+// import { finishStep, printToConsole, step } from '../utils/logger.js'
+// import { progressTracker, PROGRESS_STATE } from '../utils/progressTracker.js'
 import { parseList } from '../utils/listParser.js'
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// const file = (filename) => path.join(__dirname, '../outputs', filename)
 
 const delimiter = "---------------------------------------------------------------"
 
@@ -21,29 +13,28 @@ export const synchronousV2 = async (topics, options) => {
         let contents = []
 
         const filename = topic.searchTerm + ".txt"
-        // const filePath = file(filename)
 
         const searchTerms = parseSearch(topic)
         const humanReadableTopic = buildTopic(topic)
 
-        if (!progressTracker.hasTopic(topic.id)) {
-            contents.push(humanReadableTopic)
-        }
+        // if (!progressTracker.hasTopic(topic.id)) {
+        contents.push(humanReadableTopic)
+        // }
 
-        let index = 1
+        // let index = 1
         for await (let { searchFor: search, out } of searchTerms) {
-            if (progressTracker.isComplete(topic.id, index)) {
-                printToConsole("Skipping search as it is complete for : " + search, 'warn')
-                index++
-                continue
-            }
-            const masterStep = step("Currently searching for :", search);
+            // if (progressTracker.isComplete(topic.id, index)) {
+            //     console.log("Skipping search as it is complete for : " + search, 'warn')
+            //     index++
+            //     continue
+            // }
+            console.log("Currently searching for :", search);
             let res = await api.sendMessage(search, {
                 timeoutMs
             })
-            finishStep(masterStep)
+            // finishStep(masterStep)
             if (out === 'json') {
-                console.log(res.text)
+                // console.log(res.text)
                 try {
                     var _items
                     if (res.text.startsWith('1.')) {
@@ -57,8 +48,8 @@ export const synchronousV2 = async (topics, options) => {
                     }
                 }
                 catch (err) {
-                    progressTracker.track(topic.id, String(index++), PROGRESS_STATE.FAILED)
-                    printToConsole("Skipping search due to error for : " + search, 'warn')
+                    // progressTracker.track(topic.id, String(index++), PROGRESS_STATE.FAILED)
+                    console.log("Skipping search due to error for : " + search, 'warn')
                     failedTopics.push(topic)
                     contents.push(search + "\n")
                     continue
@@ -68,53 +59,51 @@ export const synchronousV2 = async (topics, options) => {
                 let listIndex = 1
                 for await (let item of _items) {
                     const searchTermInDetail = `describe in detail ${item.toLowerCase()} company in 200 words`
-                    const subStep = step("\tCurrently searching for :", searchTermInDetail);
+                    console.log("\tCurrently searching for :", searchTermInDetail);
                     const detailedRes = await api.sendMessage(searchTermInDetail, {
                         timeoutMs
                     })
                     subContents.push(`${item} - ` + detailedRes.text.trim())
-                    finishStep(subStep)
-                    printToConsole(`\t${listIndex++}. Done with : ` + searchTermInDetail, 'success')
+                    // finishStep(subStep)
+                    console.log(`\t${listIndex++}. Done with : ` + searchTermInDetail)
                 }
                 contents.push([subContents[0], subContents.slice(1).join(`\n${delimiter}\n`)].join('\n\n'))
-                progressTracker.track(topic.id, String(index++))
+                // progressTracker.track(topic.id, String(index++))
                 continue
             }
             else {
                 contents.push(`${search}\n\n` + res.text.trim())
-                printToConsole("Done with : " + search, 'success')
+                console.log("Done with : " + search)
             }
-            progressTracker.track(topic.id, String(index++))
+            // progressTracker.track(topic.id, String(index++))
         }
-        if (!progressTracker.isComplete(topic.id, index)) {
+        // if (!progressTracker.isComplete(topic.id, index)) {
             try {
-                const telegramStep = step('Topic build success.', `Sending ${filename} via telegram...`)
-                // fs.writeFileSync(filePath, contents.join(`\n${delimiter}\n`), 'utf-8')
+                console.log('Topic build success.', `Sending ${filename} via telegram...`)
                 await onDocumentProcessed(chatId, {
                     buffer: Buffer.from(contents.join(`\n${delimiter}\n`)),
                     filename
                 })
-                // fs.unlinkSync(file(filename)) // delete the file to conserve storage
-                progressTracker.track(topic.id, index++)
-                finishStep(telegramStep)
-                printToConsole(`Sent ${filename} successfully`, 'success')
+                // progressTracker.track(topic.id, index++)
+                // finishStep(telegramStep)
+                console.log(`Sent ${filename} successfully`)
             }
             catch (err) {
                 console.log(err.toString())
-                printToConsole(`Skipping sending ${filename} via telegram due to error!`, 'warn')
-                progressTracker.track(topic.id, index++, PROGRESS_STATE.FAILED)
+                console.log(`Skipping sending ${filename} via telegram due to error!`)
+                // progressTracker.track(topic.id, index++, PROGRESS_STATE.FAILED)
                 continue
             }
-        }
-        else {
-            printToConsole(`Skipping sending ${filename} as it was already sent`, 'warn')
-            continue
-        }
+        // }
+        // else {
+        //     console.log(`Skipping sending ${filename} as it was already sent`, 'warn')
+        //     continue
+        // }
         console.log('\n\n')
     }
-    printToConsole("Succeeded : ", 'success', topics.length - failedTopics.length)
-    printToConsole("Failed : ", failedTopics.length > 0 ? 'error' : 'success', failedTopics.length)
+    console.log("Succeeded : ", 'success', topics.length - failedTopics.length)
+    console.log("Failed : ", failedTopics.length > 0 ? 'error' : 'success', failedTopics.length)
     failedTopics.forEach(topic => {
-        printToConsole(topic.searchTerm, 'error')
+        console.log(topic.searchTerm, 'error')
     })
 }

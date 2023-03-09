@@ -1,16 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api'
 import { config } from 'dotenv'
-import fs from 'fs'
-// import { fileURLToPath } from 'url';
-// import path from 'path';
 import { analyzeFile } from '../utils/analyzeFile.js';
 import { extractTemplateVars } from '../utils/extractTemplateVars.js';
 import { printToConsole } from '../utils/logger.js';
 
 config()
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 // const chatId = 1486538799
 const personalChatId = 1972126908
@@ -73,7 +67,6 @@ export const sendDocument = async (chatId, details) => {
     if (!bot || !bot.sendDocument) throw new Error('Telegram Bot was not initialized properly! Have you called init() before?')
 
     const { buffer, filename } = details
-    // const buffer = fs.readFileSync(filepath)
     const caption = analyzeFile(buffer)
 
     console.log(caption)
