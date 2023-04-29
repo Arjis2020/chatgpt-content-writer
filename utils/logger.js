@@ -2,21 +2,22 @@ import { loader } from "./loader.js"
 import chalk from 'chalk'
 
 function printToConsole(text, level = "success", additionalText = "") {
-    process.stdout.clearLine()
-    process.stdout.cursorTo(0)
-    process.stdout.moveCursor(0, 0)
-    function getLog() {
-        if (level === 'success')
-            return success(text)
-        else if (level === 'error')
-            return error(text)
-        else if (level === 'warn')
-            return warn(text)
-        else if(level === 'info')
-            return info(text)
-        return text
-    }
-    console.log(getLog() + additionalText)
+    // process.stdout.clearLine()
+    // process.stdout.cursorTo(0)
+    // process.stdout.moveCursor(0, 0)
+    // function getLog() {
+    //     if (level === 'success')
+    //         return success(text)
+    //     else if (level === 'error')
+    //         return error(text)
+    //     else if (level === 'warn')
+    //         return warn(text)
+    //     else if(level === 'info')
+    //         return info(text)
+    //     return text
+    // }
+    // console.log(getLog() + additionalText)
+    console.log(text, additionalText)
 }
 
 function finishStep(step) {
