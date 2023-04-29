@@ -1,16 +1,8 @@
 import { parseSearch } from '../searchParser.js'
 import { buildTopic } from '../topics.js'
 import { finishStep, printToConsole, step } from '../utils/logger.js'
-// import fs from 'fs'
-// import path from 'path'
 import { progressTracker, PROGRESS_STATE } from '../utils/progressTracker.js'
-// import { fileURLToPath } from 'url'
 import { parseList } from '../utils/listParser.js'
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// const file = (filename) => path.join(__dirname, '../outputs', filename)
 
 const delimiter = "---------------------------------------------------------------"
 

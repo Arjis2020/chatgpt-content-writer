@@ -1,18 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api'
 import { config } from 'dotenv'
-import fs from 'fs'
-// import { fileURLToPath } from 'url';
-// import path from 'path';
 import { analyzeFile } from '../utils/analyzeFile.js';
 import { extractTemplateVars } from '../utils/extractTemplateVars.js';
 import { printToConsole } from '../utils/logger.js';
 
 config()
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// const chatId = 1486538799
 const personalChatId = 1972126908
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT
@@ -62,6 +55,7 @@ export const init = async (onTextHandler) => {
             }
         }
         catch (err) {
+            console.log(err)
             await bot.sendMessage(message.chat.id, `${String.fromCodePoint(0x274C)} Request failed.\n\n${err.message}`)
         }
     })
